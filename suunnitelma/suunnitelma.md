@@ -2,7 +2,7 @@
 
 (Täydennä oman pelisi tiedot tähän tiedostoon muokkaamalla 
 tiedostoa tekstieditorissa. Käytä [Markdown-syntaksia](https://about.gitlab.com/handbook/markdown-guide/).
-Poista sitten *kaikki* suluilla merkityt kohdat.)
+Poista sitten *kaikki* suluilla merkityt ohjetekstit.)
 
 ## Tietoja 
 
