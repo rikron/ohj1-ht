@@ -11,6 +11,4 @@ Sekä suunnitelman että pelin muokkaamisen tulee tapahtua Git-työkaluja käytt
 Tiedostojen lisääminen tai muokkaaminen GitLab-palvelun kautta (selaimessa) **on
 ehdottomasti kielletty**. 
 
-
 Lue Git-versiohallinnan tarkemmat käyttöohjeet TIMistä: <https://tim.jyu.fi/view/kurssit/tie/ohj1/harjoitustyo/git>
-
