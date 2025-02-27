@@ -39,10 +39,14 @@ public class PinguLaskettelee : PhysicsGame
     
     
     // Luodaan esteiden muodot kuvista. 
-    // On ikävää, jos esteen muoto onkin erilainen, kun kuvasta päättelisi
+    // On ikävää, jos esteen muoto onkin erilainen, kun kuvasta päättelisi.
+    // Myös ikävää, kun peli ei pyöri kunnolla näiden kanssa
+    // TODO ~ ETSI VIKA
+    /*
     private Shape kiviMuoto = Shape.FromImage(kiviYksi);
     private Shape puuMuoto = Shape.FromImage(puuYksi);
     private Shape pinguMuoto = Shape.FromImage(pingunKuvaKolme);
+    */
     
     /// <summary>
     /// TODO ~ NÄMÄ PITÄÄ MUISTAA MUUTTAA VAKIOIKSI, OSA SIIRRETTÄVÄ PELIN SISÄLLE
@@ -149,22 +153,29 @@ public class PinguLaskettelee : PhysicsGame
     }
 
     
+    /// <summary>
+    /// Laskin kertoo, mitä tehdään aina ajastimen mukaisen intervallin aikana
+    /// TODO ~ Tätä voisi jaotella aliohjelmiin
+    /// </summary>
     private void Laskin()
     {
         int random = RandomGen.NextInt(0, 100);
         esteenNopeus += 10;
         if (sydamet == 0) esteenNopeus = 0;
         Vector vektori = new Vector(0, esteenNopeus);
+        
         for (int i = 0; i < esteidenMaara; i++)
         {
             este[i].Velocity = vektori;
-            if (este[i].Y > 0) este[i].Destroy();
+            if (este[i].Y > 500) este[i].Destroy();
         }
+        
         if (ajastin.Interval > 0.5) ajastin.Interval -= 0.01;
-        Console.WriteLine("AJASTIN "+ajastin.Interval);
-        Console.WriteLine("interval on "+interval);
+        //Console.WriteLine("AJASTIN "+ajastin.Interval);
+        //Console.WriteLine("interval on "+interval);
         kuljettuMatka += interval;
         //Console.WriteLine(este[3].Y);
+        
         if (random < 75 && sydamet > 0)
         {
             int random2 = RandomGen.NextInt(3, 5);
@@ -172,9 +183,6 @@ public class PinguLaskettelee : PhysicsGame
             esteTiedot[0]++;
         }
         
-        
-        
-
         if (random < 25 && sydamet < 3 && sydamet > 0)
         {
             suksi = LuoSuksi();
@@ -237,7 +245,12 @@ public class PinguLaskettelee : PhysicsGame
         return este;
     }
 
-
+    
+    /// <summary>
+    /// Luo suksen
+    /// TODO ~ Pitää vähän muokata, että nämä kulkee yhtä vauhtia kuin muutkin. Eli taulukko
+    /// </summary>
+    /// <returns></returns>
     private PhysicsObject LuoSuksi()
     {
         int randomX = RandomGen.NextInt(-450, 450);
@@ -307,8 +320,8 @@ public class PinguLaskettelee : PhysicsGame
     {
         if (sydamet <= 3) sydamet += 1;
         sydanLaskuri.Value = sydamet;
-        Console.WriteLine(sydamet);
-        //suksi.Destroy();
+        //Console.WriteLine(sydamet);
+        suksi.Destroy();
         if (sydamet == 3) pingu.Image = pingunKuvaKolme;
         if (sydamet == 2) pingu.Image = pingunKuvaKaksi;
         if (sydamet == 1) pingu.Image = pingunKuvaYksi;
