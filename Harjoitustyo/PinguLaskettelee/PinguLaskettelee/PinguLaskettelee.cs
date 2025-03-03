@@ -49,32 +49,28 @@ public class PinguLaskettelee : PhysicsGame
     private Shape puuMuoto = Shape.FromImage(puuYksi);
     private Shape pinguMuoto = Shape.FromImage(pingunKuvaKolme);
     */
-    
+
     /// <summary>
     /// TODO ~ NÄMÄ PITÄÄ MUISTAA MUUTTAA VAKIOIKSI, OSA SIIRRETTÄVÄ PELIN SISÄLLE
     /// </summary>
-    private int sydamet = 3;
-    private int esteenNopeus = 300;
-    private int esteidenMaara = 0;
-    private int suksienMaara = 0;
-    private int tuhottu = 0;
-
+    private int sydamet;
+    private int esteenNopeus;
+    private int esteidenMaara;
+    private int suksienMaara;
+    private int tuhottu;
     
-    private double interval = 1;
-    private double kuljettuMatka = 0;
-    
+    private double interval;
+    private double kuljettuMatka;
     
     private PhysicsObject pingu;
     private PhysicsObject kivi;
-    private PhysicsObject[] suksi = new PhysicsObject[1000];
-
+    private PhysicsObject[] suksi;
+    private PhysicsObject[] este;
+    
     private Timer ajastin;
     
-    private PhysicsObject[] este = new PhysicsObject[1000];
- 
-    
-    private double[] esteTiedot = new double[3];
-    private double[] pinguTiedot = new double[3];
+    private double[] esteTiedot;
+    private double[] pinguTiedot;
     
     
     public IntMeter sydanLaskuri;
@@ -100,7 +96,7 @@ public class PinguLaskettelee : PhysicsGame
         Level.CreateBorders();
         Level.BackgroundColor = Color.White;
         // IsFullScreen = true; TODO ~ Pitäisikö tehdä fullscreen peli??
-        
+        LuoMuuttujat();
         pingu = Pingu();
         
         // Camera.FollowedObject = pingu; TODO ~ Tämä on ihan hieno!
@@ -110,6 +106,31 @@ public class PinguLaskettelee : PhysicsGame
         Update();
     }
 
+
+    
+    /// <summary>
+    /// LuoMuuttujat aliohjelma hoitaa tarvittavien muuttujien arvojen asettamisen
+    /// pelin alussa. 
+    /// </summary>
+    private void LuoMuuttujat()
+    {
+        sydamet = 3;
+        esteenNopeus = 300;
+        esteidenMaara = 0;
+        suksienMaara = 0; 
+        tuhottu = 0;
+    
+        interval = 1;
+        kuljettuMatka = 0;
+        
+        suksi = new PhysicsObject[1000];
+        este = new PhysicsObject[1000];
+        
+        esteTiedot = new double[3];
+        pinguTiedot = new double[3];
+    }
+    
+    
     
     private void LisaaLaskuri()
     {
@@ -166,13 +187,13 @@ public class PinguLaskettelee : PhysicsGame
         ajastin.Interval = interval;
         ajastin.Timeout += Laskin;
         ajastin.Start();
-
     }
 
     
     /// <summary>
     /// Laskin kertoo, mitä tehdään aina ajastimen mukaisen intervallin aikana
     /// TODO ~ Tätä voisi jaotella aliohjelmiin
+    /// TODO Vois myös noita numeroita vaihtaa muuttujiin
     /// </summary>
     private void Laskin()
     {
@@ -210,7 +231,7 @@ public class PinguLaskettelee : PhysicsGame
         
         if (random < 75 && sydamet < 3 && sydamet > 0)
         {
-            suksi = LuoSuksi(100);
+            suksi = LuoSuksi();
         }
         //Console.WriteLine("kuljettu matka on "+kuljettuMatka);
         //if (kuljettuMatka>10) sydamet = 0;
@@ -262,7 +283,7 @@ public class PinguLaskettelee : PhysicsGame
             int randomX = RandomGen.NextInt(-450, 450);
             int randomY = RandomGen.NextInt(-850, -450);
             int randomKoko = RandomGen.NextInt(30, 100);
-            PhysicsObject kivi = new PhysicsObject(randomKoko, randomKoko);
+            kivi = new PhysicsObject(randomKoko, randomKoko);
             kivi.Color = Color.Red;
             kivi.X = randomX;
             kivi.Y = randomY;
@@ -293,7 +314,7 @@ public class PinguLaskettelee : PhysicsGame
     /// TODO ~ Grafiikat ois kivat
     /// </summary>
     /// <returns></returns>
-    private PhysicsObject[] LuoSuksi(int koko)
+    private PhysicsObject[] LuoSuksi()
     {
         int randomX = RandomGen.NextInt(-450, 450);
         int randomY = RandomGen.NextInt(-850, -450);
@@ -341,16 +362,7 @@ public class PinguLaskettelee : PhysicsGame
         if (sydamet == 1) pingu.Image = pingunKuvaYksi;
         if (sydamet == 0)
         {
-            StopAll();
-            for (int i = 0; i < esteidenMaara; i++)
-            {
-                este[i].Velocity = Vector.Zero;
-                StopAll();
-            }
-            pingu.LinearDamping = 100;
-            pingu.Image = pingunKuvaNolla;
-            MessageDisplay.Add($"Pingun after ski jäi nyt välistä");
-            // TODO ~ Tähän lisätään esteidenTiedot kutsu
+            SydametNolla();
         }
     }
     
@@ -360,34 +372,71 @@ public class PinguLaskettelee : PhysicsGame
     /// Pingulle lisätään sydän, jos sydämiä on alle kolme.
     /// Pingun kuvaa muutetaan sydänten mukaan.
     /// </summary>
-    /// <param name="pingu"></param>
-    /// <param name="suksi"></param>
-    private void TormaysSuksi(PhysicsObject pingu, PhysicsObject suksi)
+    /// <param name="pelaaja"></param>
+    /// <param name="sukset"></param>
+    private void TormaysSuksi(PhysicsObject pelaaja, PhysicsObject sukset)
     {
         if (sydamet < 3) sydamet += 1;
         sydanLaskuri.Value = sydamet;
         //Console.WriteLine(sydamet);
-        suksi.Destroy();
+        sukset.Destroy();
         if (sydamet == 3) pingu.Image = pingunKuvaKolme;
         if (sydamet == 2) pingu.Image = pingunKuvaKaksi;
         if (sydamet == 1) pingu.Image = pingunKuvaYksi;
         if (sydamet == 0)
         {
-            StopAll();
-            suksi.Velocity = Vector.Zero;
-            pingu.LinearDamping = 100;
-            pingu.Image = pingunKuvaNolla;
-            MessageDisplay.Add($"Pingun after ski jäi nyt välistä");
-            // TulostaTiedot(esteTiedot, pinguTiedot)
-            //Console.WriteLine($"Esteiden määrä oli {esteidenMaara}");
+            SydametNolla();
         }
     }
 
+    
+    private void TormaysTahti(PhysicsObject pingu, PhysicsObject tahti)
+    {
+        //tahtiMaara += 1;
+        //tahti.Destroy();
+    }
+    
 
     private void TulostaTiedot(double[] esteTiedot, double[] pinguTiedot)
     {
         // TODO ~~ pitää lisätä toiminnot, jotta tiedot tulostetaan pelin lopussa
         // Tätä kutsutaan sitten, kun sydamet on nollassa. 
         // Lisäisikö aloita uudestaan napin tänne?
+    }
+
+
+    /// <summary>
+    /// Hoitaa toimet, kun Pingun sydämet ovat nollassa.
+    /// Objektien liike pysäytetään.
+    /// TODO ~ Tee hieno valikko, et alottaako alusta vai ei
+    /// </summary>
+    private void SydametNolla()
+    {
+        StopAll();
+        for (int i = 0; i < esteidenMaara; i++)
+        {
+            este[i].Velocity = Vector.Zero;
+            StopAll();
+        }
+        pingu.LinearDamping = 100;
+        pingu.Image = pingunKuvaNolla;
+        MessageDisplay.Add($"Pingun after ski jäi nyt välistä");
+        MessageDisplay.Add("Paina enter aloittaaksesi uudestaan!");
+        Keyboard.Listen(Key.Enter, ButtonState.Pressed, Restart, "Aloita peli uudestaan");
+        // TODO ~ Tähän lisätään esteidenTiedot kutsu
+    }
+
+    
+    /// <summary>
+    /// Restart aliohjelma hoitaa toimet, kun pelaaja päättää
+    /// aloittaa pelin uudestaan. Se poistaa aiemmat objektit
+    /// ja kutsuu Begin aliohjelmaa aloittaen pelin alusta.
+    /// </summary>
+    private void Restart()
+    {
+        
+        ClearAll();
+        sydamet = 3;
+        Begin();
     }
 }
