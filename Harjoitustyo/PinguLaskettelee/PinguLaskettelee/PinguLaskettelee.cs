@@ -27,7 +27,7 @@ public class PinguLaskettelee : PhysicsGame
     const int laskurinMaksimi = 3;
     const int laskurinMinimi = 0;
         
-    
+    // TODO kuvaavammat nimet
     /// Pingun kuvat eri tilanteissa
     private static readonly Image pingunKuvaKolme = LoadImage("pinguKolme");
     private static readonly Image pingunKuvaKaksi = LoadImage("pinguKaksi");
@@ -106,7 +106,6 @@ public class PinguLaskettelee : PhysicsGame
         Update();
     }
 
-
     
     /// <summary>
     /// LuoMuuttujat aliohjelma hoitaa tarvittavien muuttujien arvojen asettamisen
@@ -131,13 +130,19 @@ public class PinguLaskettelee : PhysicsGame
     }
     
     
-    
+    /// <summary>
+    /// TODO Lisätään tähän matkalaskurin sun muut hilavitkuttimet
+    /// </summary>
     private void LisaaLaskuri()
     {
         sydanLaskuri = LuoLaskuri();
     }
 
     
+    /// <summary>
+    /// Luo sydänlaskurin näytölle
+    /// </summary>
+    /// <returns>Laskurin</returns>
     private IntMeter LuoLaskuri()
     {
         IntMeter laskuri = new IntMeter(3);
@@ -181,6 +186,10 @@ public class PinguLaskettelee : PhysicsGame
     }
     
     
+    /// <summary>
+    /// Luodaan tietyn väliajoin päivittävä laskuri,
+    /// joka kutsuu Laskin aliohjelmaa, intervallin välein
+    /// </summary>
     private void Update()
     {
         ajastin = new Timer();
@@ -243,7 +252,6 @@ public class PinguLaskettelee : PhysicsGame
             }
         }
     }
-
     
     
     private PhysicsObject Pingu()
@@ -392,6 +400,7 @@ public class PinguLaskettelee : PhysicsGame
     
     private void TormaysTahti(PhysicsObject pingu, PhysicsObject tahti)
     {
+        //TODO Lisää tähtisysteemit
         //tahtiMaara += 1;
         //tahti.Destroy();
     }
@@ -434,7 +443,6 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void Restart()
     {
-        
         ClearAll();
         sydamet = 3;
         Begin();
