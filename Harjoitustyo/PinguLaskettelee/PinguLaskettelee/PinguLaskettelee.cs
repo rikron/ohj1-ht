@@ -14,7 +14,7 @@ using SixLabors.ImageSharp.Processing.Processors.Filters;
 namespace PinguLaskettelee;
 
 /// @author Riku Rönkä
-/// @version 24.02.2025
+/// @version 31.03.2025
 /// <summary>
 /// Pingu Laskettelee! on yksinpelattava scroller peli, jossa
 /// pelaaja välttelee satunnaisia esteitä ja pyrkii pääsemään maaliin
@@ -24,19 +24,22 @@ public class PinguLaskettelee : PhysicsGame
 {
     // Pelin etenemisen nopeutta määrää laskuri
     // Nämä rajoittavat laskurin 
-    const int laskurinMaksimi = 3;
-    const int laskurinMinimi = 0;
-        
+    private const int LaskurinMaksimi = 3;
+    private const int LaskurinMinimi = 0;
+    private const int SydantenMaksimi = 3;
     
-    /// Pingun kuvat eri tilanteissa
+    /// <summary>
+    /// Pingun kuvia eri sydänmäärillä
+    /// </summary>
     private static readonly Image pingunKuvaKolme = LoadImage("pinguKolme");
     private static readonly Image pingunKuvaKaksi = LoadImage("pinguKaksi");
     private static readonly Image pingunKuvaYksi = LoadImage("pinguYksi");
     private static readonly Image pingunKuvaNolla = LoadImage("pinguNolla");
     
     
-    /// Kuvat esteistä
+    /// Kiven kuva
     private static readonly Image kiviYksi = LoadImage("kivi");
+    /// Puun kuva
     private static readonly Image puuYksi = LoadImage("puu");
     
     
@@ -53,23 +56,31 @@ public class PinguLaskettelee : PhysicsGame
     /// <summary>
     /// TODO ~ NÄMÄ PITÄÄ MUISTAA MUUTTAA VAKIOIKSI, OSA SIIRRETTÄVÄ PELIN SISÄLLE
     /// </summary>
-    private int sydamet;
-    private int esteenNopeus;
-    private int esteidenMaara;
-    private int suksienMaara;
-    private int tuhottu;
+    private int _pingunSydamet;
+    /// <summary>
+    /// Esteiden nopeus kokonaislukuna. Kasvaa pelin edetessä
+    /// ja pienenee pingun osuessa esteeseen
+    /// </summary>
+    private int _esteenNopeus;
+    private int _esteidenLukumaara;
+    private int _sydantenLukumaara;
+    //private int tuhottu;
     
-    private double interval;
-    private double kuljettuMatka;
+    private double _ajastimenIntervalli;
+    //private double kuljettuMatka;
     
     private PhysicsObject pingu;
     private PhysicsObject kivi;
-    private PhysicsObject[] suksi;
-    private PhysicsObject[] este;
+    private PhysicsObject[] pingunSydamet;
+    private PhysicsObject[] kentanEsteet;
     
     private Timer ajastin;
     
+    /// <summary>
+    /// 
+    /// </summary>
     private double[] esteTiedot;
+    
     private double[] pinguTiedot;
     
     
@@ -93,7 +104,10 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void LuoKentta()
     {
-        Level.CreateBorders();
+        IsFullScreen = true;
+        Vector kentanKoko = new Vector(1920, 1080);
+        Level.Size = kentanKoko;
+        Level.CreateBorders(0, false);
         Level.BackgroundColor = Color.White;
         // IsFullScreen = true; TODO ~ Pitäisikö tehdä fullscreen peli??
         LuoMuuttujat();
@@ -105,8 +119,7 @@ public class PinguLaskettelee : PhysicsGame
         AsetaOhjaimet();
         Update();
     }
-
-
+    
     
     /// <summary>
     /// LuoMuuttujat aliohjelma hoitaa tarvittavien muuttujien arvojen asettamisen
@@ -114,22 +127,21 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void LuoMuuttujat()
     {
-        sydamet = 3;
-        esteenNopeus = 300;
-        esteidenMaara = 0;
-        suksienMaara = 0; 
-        tuhottu = 0;
+        _pingunSydamet = 3;
+        _esteenNopeus = 300;
+        _esteidenLukumaara = 0;
+        _sydantenLukumaara = 0; 
+        //tuhottu = 0;
     
-        interval = 1;
-        kuljettuMatka = 0;
+        _ajastimenIntervalli = 1;
+        //kuljettuMatka = 0;
         
-        suksi = new PhysicsObject[1000];
-        este = new PhysicsObject[1000];
+        pingunSydamet = new PhysicsObject[1000];
+        kentanEsteet = new PhysicsObject[1000];
         
         esteTiedot = new double[3];
         pinguTiedot = new double[3];
     }
-    
     
     
     private void LisaaLaskuri()
@@ -138,20 +150,25 @@ public class PinguLaskettelee : PhysicsGame
     }
 
     
+    /// <summary>
+    /// Aliohjelma luo sydänlaskurin, ja lisää sen ruudulle
+    /// </summary>
+    /// <returns>Palauttaa IntMeter laskurin</returns>
     private IntMeter LuoLaskuri()
     {
         IntMeter laskuri = new IntMeter(3);
-        laskuri.MinValue = laskurinMinimi;
-        laskuri.MaxValue = laskurinMaksimi;
+        laskuri.MinValue = LaskurinMinimi;
+        laskuri.MaxValue = LaskurinMaksimi;
         
-        Label naytto = new Label();
-        naytto.BindTo(laskuri);
-        naytto.X = 0;
-        naytto.Y = Level.Top - 50;
-        naytto.TextColor = Color.Black;
-        naytto.BorderColor = Color.White;
-        naytto.Color = Color.White;
-        Add(naytto);
+        Label sydanLaskuriNaytolla = new Label();
+        sydanLaskuriNaytolla.Title = "Sydamet: ";
+        sydanLaskuriNaytolla.BindTo(laskuri);
+        sydanLaskuriNaytolla.X = 0;
+        sydanLaskuriNaytolla.Y = Level.Top - 50;
+        sydanLaskuriNaytolla.TextColor = Color.Black;
+        sydanLaskuriNaytolla.BorderColor = Color.White;
+        sydanLaskuriNaytolla.Color = Color.White;
+        Add(sydanLaskuriNaytolla);
         
         return laskuri;
     }
@@ -163,8 +180,9 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void AsetaOhjaimet()
     {
-        Keyboard.Listen(Key.A, ButtonState.Down, LiikutaPingua, "Liikuttaa pingua vasemmalle", pingu, new Vector(-esteenNopeus-300, 0), -1.0);
-        Keyboard.Listen(Key.D, ButtonState.Down, LiikutaPingua, "Liikuttaa pingua oikealle", pingu, new Vector(esteenNopeus+300, 0), 1.0);
+        int pingunNopeus = 700;
+        Keyboard.Listen(Key.A, ButtonState.Down, LiikutaPingua, "Liikuttaa pingua vasemmalle", pingu, new Vector(-pingunNopeus, 0), -1.0);
+        Keyboard.Listen(Key.D, ButtonState.Down, LiikutaPingua, "Liikuttaa pingua oikealle", pingu, new Vector(pingunNopeus, 0), 1.0);
     }
 
 
@@ -184,7 +202,7 @@ public class PinguLaskettelee : PhysicsGame
     private void Update()
     {
         ajastin = new Timer();
-        ajastin.Interval = interval;
+        ajastin.Interval = _ajastimenIntervalli;
         ajastin.Timeout += Laskin;
         ajastin.Start();
     }
@@ -197,70 +215,87 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void Laskin()
     {
-        int random = RandomGen.NextInt(0, 100);
-        esteenNopeus += 10;
-        if (sydamet == 0) esteenNopeus = 0;
-        Vector vektori = new Vector(0, esteenNopeus);
+        // Nämä kokonaisluvut luovat satunnaisuutta esteiden syntymiseen
+        int satunnainenArvo = RandomGen.NextInt(0, 100);
+        int satunnaisuudenProsentti = 99;
+
+        int esteenNopeudenLisays = 10;
         
-        for (int i = 0; i < esteidenMaara; i++)
+        _esteenNopeus += esteenNopeudenLisays;
+        
+        if (_pingunSydamet == 0) _esteenNopeus = 0;
+        Vector vektori = new Vector(0, _esteenNopeus);
+        
+        for (int i = 0; i < _esteidenLukumaara; i++)
         {
-            este[i].Velocity = vektori;
-            if (este[i].Y > 500) este[i].Destroy();
+            kentanEsteet[i].Velocity = vektori;
+            if (kentanEsteet[i].Y > Level.Top) kentanEsteet[i].Destroy();
             try
             {
-                suksi[i].Velocity = vektori;
+                pingunSydamet[i].Velocity = vektori;
             }
             catch
             {
-                este[i].Velocity = vektori;
+                kentanEsteet[i].Velocity = vektori;
             }
         }
         
         if (ajastin.Interval > 0.5) ajastin.Interval -= 0.01;
         //Console.WriteLine("AJASTIN "+ajastin.Interval);
         //Console.WriteLine("interval on "+interval);
-        kuljettuMatka += interval;
+        //kuljettuMatka += _ajastimenIntervalli;
         //Console.WriteLine(este[3].Y);
         
-        if (random < 75 && sydamet > 0)
+        // Tässä luodaan esteitä, jos satunnainnaisest luotu kokonaisluku on alle raja-arvon
+        // ja sydämiä on enemmän kuin 0
+        if (satunnainenArvo < satunnaisuudenProsentti && _pingunSydamet > 0)
         {
             int random2 = RandomGen.NextInt(3, 5);
-            este = LuoEste(random2);
+            kentanEsteet = LuoEste(random2);
             esteTiedot[0]++;
         }
         
-        if (random < 75 && sydamet < 3 && sydamet > 0)
+        // Tässä luodaan suksia, jos satunnainnaisest luotu kokonaisluku on alle raja-arvon
+        // ja sydämiä on enemmän kuin 0
+        if (satunnainenArvo < satunnaisuudenProsentti && _pingunSydamet is < 3 and > 0)
         {
-            suksi = LuoSuksi();
+            pingunSydamet = LuoSydän();
         }
         //Console.WriteLine("kuljettu matka on "+kuljettuMatka);
         //if (kuljettuMatka>10) sydamet = 0;
-        if (sydamet == 3)
+        /*if (sydamet == 3)
         {
             for (int i = 0; i < suksienMaara; i++)
             {
                 suksi[i].Destroy();
             }
-        }
+        }*/
     }
 
     
-    
+    /// <summary>
+    /// Pelaajan liikuttama fysiikkaolio Pingu
+    /// </summary>
+    /// <returns>Palauttaa PhysicObject pingun.</returns>
     private PhysicsObject Pingu()
     {
-        pingu = new PhysicsObject(50, 50);
+        Vector pingunSijaintiAluksi = new Vector(0, 200);
+        int pingunKoko = 50;
+        double pingunLinearDamping = 0.998;
+        
+        pingu = new PhysicsObject(pingunKoko, pingunKoko);
         pingu.Shape = Shape.Circle;
         pingu.Color = Color.Red;
-        pingu.X = 0;
-        pingu.Y = 200;
+        pingu.Position = pingunSijaintiAluksi;
         pingu.Image = pingunKuvaKolme;
         pingu.RotateImage = false;
         pingu.IgnoresCollisionResponse = false;
-        pingu.MaxAngularVelocity = 2;
-        pingu.LinearDamping = 0.998;
+        //pingu.MaxAngularVelocity = 2;
+        pingu.LinearDamping = pingunLinearDamping;
         //AddCollisionHandler(pingu, Tormays);
         AddCollisionHandler(pingu, "este", TormaysEste);
         AddCollisionHandler(pingu, "suksi", TormaysSuksi);
+        //AddCollisionHandler(Level., "pingu" );
         Add(pingu);
         return pingu;
     }
@@ -277,11 +312,11 @@ public class PinguLaskettelee : PhysicsGame
     /// <returns>Esteen tiedot</returns>
     private PhysicsObject[] LuoEste(int montako)
     {
-        Vector vektori = new Vector(0, esteenNopeus);
+        Vector vektori = new Vector(0, _esteenNopeus);
         for (int i = 0; i < montako; i++)
         {
-            int randomX = RandomGen.NextInt(-450, 450);
-            int randomY = RandomGen.NextInt(-850, -450);
+            double randomX = RandomGen.NextDouble(Level.Left, Level.Right);
+            double randomY = RandomGen.NextDouble(Level.Bottom-500, Level.Bottom);
             int randomKoko = RandomGen.NextInt(30, 100);
             kivi = new PhysicsObject(randomKoko, randomKoko);
             kivi.Color = Color.Red;
@@ -301,11 +336,11 @@ public class PinguLaskettelee : PhysicsGame
                 kivi.Image = puuYksi;
                 kivi.Shape = Shape.Circle;
             }
-            este[esteidenMaara] = kivi;
-            esteidenMaara++;
+            kentanEsteet[_esteidenLukumaara] = kivi;
+            _esteidenLukumaara++;
             Add(kivi);
         }
-        return este;
+        return kentanEsteet;
     }
 
     
@@ -314,13 +349,13 @@ public class PinguLaskettelee : PhysicsGame
     /// TODO ~ Grafiikat ois kivat
     /// </summary>
     /// <returns></returns>
-    private PhysicsObject[] LuoSuksi()
+    private PhysicsObject[] LuoSydän()
     {
-        int randomX = RandomGen.NextInt(-450, 450);
-        int randomY = RandomGen.NextInt(-850, -450);
-        Vector vektori = new Vector(0, esteenNopeus);
+        double randomX = RandomGen.NextDouble(Level.Left, Level.Right);
+        double randomY = RandomGen.NextDouble(Level.Bottom-500, Level.Bottom);
+        Vector vektori = new Vector(0, _esteenNopeus);
         PhysicsObject objekti = new PhysicsObject(30, 30);
-        objekti.Shape = Shape.Circle;
+        objekti.Shape = Shape.Heart;
         objekti.Color = Color.Red;
         objekti.X = randomX;
         objekti.Y = randomY;
@@ -329,10 +364,10 @@ public class PinguLaskettelee : PhysicsGame
         objekti.IgnoresCollisionResponse = true;
         //este.Image = kiviYksi;
         Add(objekti);
-        suksi[suksienMaara] = objekti;
-        suksienMaara++;
+        pingunSydamet[_sydantenLukumaara] = objekti;
+        _sydantenLukumaara++;
         //esteidenMaara++;
-        return suksi;
+        return pingunSydamet;
     }
     
     
@@ -346,24 +381,19 @@ public class PinguLaskettelee : PhysicsGame
     /// <param name="esteet"></param>
     private void TormaysEste(PhysicsObject pelaaja, PhysicsObject esteet)
     {
-        sydamet -= 1;
-        sydanLaskuri.Value = sydamet;
-        if (esteenNopeus > 200) esteenNopeus -= 100;
-        Vector vektori = new Vector(0, esteenNopeus);
-        for (int i = 0; i < esteidenMaara; i++)
+        _pingunSydamet -= 1;
+        sydanLaskuri.Value = _pingunSydamet;
+        if (_esteenNopeus > 200) _esteenNopeus -= 100;
+        Vector vektori = new Vector(0, _esteenNopeus);
+        for (int i = 0; i < _esteidenLukumaara; i++)
         {
-            este[i].Velocity = vektori;
-            if (suksi[i] != null) suksi[i].Velocity = vektori;
+            kentanEsteet[i].Velocity = vektori;
+            if (pingunSydamet[i] != null) pingunSydamet[i].Velocity = vektori;
         }
         ajastin.Interval = 1;
-        Console.WriteLine(sydamet);
+        Console.WriteLine(_pingunSydamet);
         esteet.Destroy();
-        if (sydamet == 2) pingu.Image = pingunKuvaKaksi;
-        if (sydamet == 1) pingu.Image = pingunKuvaYksi;
-        if (sydamet == 0)
-        {
-            SydametNolla();
-        }
+        SydanLaskuri();
     }
     
     
@@ -373,31 +403,46 @@ public class PinguLaskettelee : PhysicsGame
     /// Pingun kuvaa muutetaan sydänten mukaan.
     /// </summary>
     /// <param name="pelaaja"></param>
-    /// <param name="sukset"></param>
-    private void TormaysSuksi(PhysicsObject pelaaja, PhysicsObject sukset)
+    /// <param name="osuttuSydan"></param>
+    private void TormaysSuksi(PhysicsObject pelaaja, PhysicsObject osuttuSydan)
     {
-        if (sydamet < 3) sydamet += 1;
-        sydanLaskuri.Value = sydamet;
+        if (_pingunSydamet < SydantenMaksimi) _pingunSydamet += 1;
+        sydanLaskuri.Value = _pingunSydamet;
         //Console.WriteLine(sydamet);
-        sukset.Destroy();
-        if (sydamet == 3) pingu.Image = pingunKuvaKolme;
-        if (sydamet == 2) pingu.Image = pingunKuvaKaksi;
-        if (sydamet == 1) pingu.Image = pingunKuvaYksi;
-        if (sydamet == 0)
+        osuttuSydan.Destroy();
+        SydanLaskuri();
+    }
+
+
+    private void SydanLaskuri()
+    {
+        if (_pingunSydamet >= SydantenMaksimi)
+        {
+            pingu.Image = pingunKuvaKolme;
+            // Kun sydämia on kolme, tuhotaan loput sydämet
+            foreach (PhysicsObject sydan in pingunSydamet)
+            {
+                if (sydan == null) break;
+                sydan.Destroy();
+            }
+        }
+        if (_pingunSydamet == 2) pingu.Image = pingunKuvaKaksi;
+        if (_pingunSydamet == 1) pingu.Image = pingunKuvaYksi;
+        if (_pingunSydamet == 0)
         {
             SydametNolla();
         }
     }
 
     
-    private void TormaysTahti(PhysicsObject pingu, PhysicsObject tahti)
+    private void TormaysTahti(PhysicsObject pelaaja, PhysicsObject tahti)
     {
         //tahtiMaara += 1;
         //tahti.Destroy();
     }
     
 
-    private void TulostaTiedot(double[] esteTiedot, double[] pinguTiedot)
+    private void TulostaTiedot(double[] esteidenTiedot, double[] pingunTiedot)
     {
         // TODO ~~ pitää lisätä toiminnot, jotta tiedot tulostetaan pelin lopussa
         // Tätä kutsutaan sitten, kun sydamet on nollassa. 
@@ -413,9 +458,9 @@ public class PinguLaskettelee : PhysicsGame
     private void SydametNolla()
     {
         StopAll();
-        for (int i = 0; i < esteidenMaara; i++)
+        for (int i = 0; i < _esteidenLukumaara; i++)
         {
-            este[i].Velocity = Vector.Zero;
+            kentanEsteet[i].Velocity = Vector.Zero;
             StopAll();
         }
         pingu.LinearDamping = 100;
@@ -434,9 +479,8 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void Restart()
     {
-        
         ClearAll();
-        sydamet = 3;
+        _pingunSydamet = SydantenMaksimi;
         Begin();
     }
 }
