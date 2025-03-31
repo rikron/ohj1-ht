@@ -22,25 +22,31 @@ namespace PinguLaskettelee;
 /// </summary>
 public class PinguLaskettelee : PhysicsGame
 {
-    // Pelin etenemisen nopeutta määrää laskuri
-    // Nämä rajoittavat laskurin 
-    private const int LaskurinMaksimi = 3;
-    private const int LaskurinMinimi = 0;
+    /// <summary>
+    /// Pingun sydänten maksimi
+    /// Pelin etenemisen nopeutta määrää laskuri. Nämä rajoittavat laskurin välille 0 ja 3.
+    /// Samalla toimivat sydänten rajoina.
+    /// </summary>
     private const int SydantenMaksimi = 3;
+    /// <summary>
+    /// Pingun sydänten minimi
+    /// Pelin etenemisen nopeutta määrää laskuri. Nämä rajoittavat laskurin välille 0 ja 3.
+    /// Samalla toimivat sydänten rajoina.
+    /// </summary>
+    private const int SydantenMinimi = 0;
     
     /// <summary>
     /// Pingun kuvia eri sydänmäärillä
     /// </summary>
-    private static readonly Image pingunKuvaKolme = LoadImage("pinguKolme");
-    private static readonly Image pingunKuvaKaksi = LoadImage("pinguKaksi");
-    private static readonly Image pingunKuvaYksi = LoadImage("pinguYksi");
-    private static readonly Image pingunKuvaNolla = LoadImage("pinguNolla");
-    
+    private static readonly Image pingunKuvaKolme = LoadImage("pinguKolme.png");
+    private static readonly Image pingunKuvaKaksi = LoadImage("pinguKaksi.png");
+    private static readonly Image pingunKuvaYksi = LoadImage("pinguYksi.png");
+    private static readonly Image pingunKuvaNolla = LoadImage("pinguNolla.png");
     
     /// Kiven kuva
-    private static readonly Image kiviYksi = LoadImage("kivi");
+    private static readonly Image kiviYksi = LoadImage("kivi.png");
     /// Puun kuva
-    private static readonly Image puuYksi = LoadImage("puu");
+    private static readonly Image puuYksi = LoadImage("puu.png");
     
     
     // Luodaan esteiden muodot kuvista. 
@@ -54,7 +60,7 @@ public class PinguLaskettelee : PhysicsGame
     */
 
     /// <summary>
-    /// TODO ~ NÄMÄ PITÄÄ MUISTAA MUUTTAA VAKIOIKSI, OSA SIIRRETTÄVÄ PELIN SISÄLLE
+    /// Pingun sydänten lukumäärä
     /// </summary>
     private int _pingunSydamet;
     /// <summary>
@@ -160,8 +166,8 @@ public class PinguLaskettelee : PhysicsGame
     private IntMeter LuoLaskuri()
     {
         IntMeter laskuri = new IntMeter(3);
-        laskuri.MinValue = LaskurinMinimi;
-        laskuri.MaxValue = LaskurinMaksimi;
+        laskuri.MinValue = SydantenMinimi;
+        laskuri.MaxValue = SydantenMaksimi;
         
         Label sydanLaskuriNaytolla = new Label();
         sydanLaskuriNaytolla.Title = "Sydamet: ";
@@ -421,6 +427,9 @@ public class PinguLaskettelee : PhysicsGame
     }
 
 
+    /// <summary>
+    /// Asettaa pingun kuvan riippuen sydanten määrästä
+    /// </summary>
     private void SydanLaskuri()
     {
         if (_pingunSydamet >= SydantenMaksimi)
@@ -433,9 +442,9 @@ public class PinguLaskettelee : PhysicsGame
                 sydan.Destroy();
             }
         }
-        if (_pingunSydamet == 2) pingu.Image = pingunKuvaKaksi;
-        if (_pingunSydamet == 1) pingu.Image = pingunKuvaYksi;
-        if (_pingunSydamet == 0)
+        else if (_pingunSydamet == 2) pingu.Image = pingunKuvaKaksi;
+        else if (_pingunSydamet == 1) pingu.Image = pingunKuvaYksi;
+        else if (_pingunSydamet == 0)
         {
             SydametNolla();
         }
