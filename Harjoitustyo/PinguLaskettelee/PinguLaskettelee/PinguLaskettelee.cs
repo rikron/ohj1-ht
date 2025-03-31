@@ -144,6 +144,9 @@ public class PinguLaskettelee : PhysicsGame
     }
     
     
+    /// <summary>
+    /// TODO Lisätään tähän matkalaskurin sun muut hilavitkuttimet
+    /// </summary>
     private void LisaaLaskuri()
     {
         sydanLaskuri = LuoLaskuri();
@@ -199,6 +202,10 @@ public class PinguLaskettelee : PhysicsGame
     }
     
     
+    /// <summary>
+    /// Luodaan tietyn väliajoin päivittävä laskuri,
+    /// joka kutsuu Laskin aliohjelmaa, intervallin välein
+    /// </summary>
     private void Update()
     {
         ajastin = new Timer();
@@ -437,6 +444,7 @@ public class PinguLaskettelee : PhysicsGame
     
     private void TormaysTahti(PhysicsObject pelaaja, PhysicsObject tahti)
     {
+        //TODO Lisää tähtisysteemit
         //tahtiMaara += 1;
         //tahti.Destroy();
     }
@@ -479,6 +487,7 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void Restart()
     {
+        
         ClearAll();
         _pingunSydamet = SydantenMaksimi;
         Begin();
