@@ -110,8 +110,10 @@ public class PinguLaskettelee : PhysicsGame
     /// </summary>
     private void LuoKentta()
     {
-        IsFullScreen = true;
+        IsFullScreen = false;
         Vector kentanKoko = new Vector(1920, 1080);
+        Vector naytonKoko = new Vector();
+        Console.WriteLine(Device.DisplayResolution.Width + " " + Device.DisplayResolution.Height);
         Level.Size = kentanKoko;
         Level.CreateBorders(0, false);
         Level.BackgroundColor = Color.White;
